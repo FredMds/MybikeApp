@@ -1,5 +1,7 @@
+const keySecret = "sk_test_CXosaxEOHMENrsmMbwBvGU5Q";
 var express = require('express');
 var router = express.Router();
+const stripe = require("stripe")(keySecret);
 
 
 // var dataCardBike = [];
@@ -57,5 +59,24 @@ router.get('/delete-card', function(req, res, next) {
 router.get('/card', function(req, res, next) {
   res.render('card', { dataCardBike:req.session.dataCardBike });
 });
+
+router.post("/checkout", (req, res) => {
+
+  var totalCmd = 0;
+  for(var i=0; i<req.session.dataCardBike.length; i++) {
+    totalCmd = totalCmd + (req.session.dataCardBike[i].price * req.session.dataCardBike[i].quantity);
+  }
+  totalCmd = totalCmd * 100;
+
+
+    stripe.charges.create({
+      amount:totalCmd,
+      description: "Sample Charge",
+      currency: "eur",
+      source: req.body.stripeToken
+    })
+   res.render("cmd-confirm");
+});
+
 
 module.exports = router;
